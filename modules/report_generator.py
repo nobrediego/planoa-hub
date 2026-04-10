@@ -85,6 +85,7 @@ def _escrever_df(ws, df, wb, row_start=1):
         ws.write(row_start, col_num, col_name, hfmt)
 
     # linhas
+    row_num = row_start  # valor padrão caso df esteja vazio
     for row_num, row in enumerate(df.itertuples(index=False), start=row_start + 1):
         for col_num, value in enumerate(row):
             col_name = df.columns[col_num]
