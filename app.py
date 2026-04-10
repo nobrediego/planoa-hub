@@ -14,7 +14,7 @@ from pathlib import Path
 
 from modules.base_loader       import carregar_base, filtrar_convenio
 from modules.pdf_parser        import parsear_pdf
-from modules.invoice_processor import carregar_fatura
+from modules.invoice_processor import carregar_fatura, carregar_fatura_salv_csv
 from modules.validator         import cruzar, resumo_por_locacao, resumo_geral
 from modules.report_generator  import gerar_excel
 
@@ -222,8 +222,8 @@ with st.sidebar:
     sel_pdf   = st.file_uploader("Fatura PDF",   type=["pdf"],  key="sel_pdf", label_visibility="collapsed")
 
     st.markdown('<p style="font-size:0.8rem;font-weight:700;margin:12px 0 6px 0;">SALV SAÚDE</p>', unsafe_allow_html=True)
-    sal_excel = st.file_uploader("Fatura Excel", type=["xlsx"], key="sal_xls", label_visibility="collapsed")
-    sal_pdf   = st.file_uploader("Fatura PDF",   type=["pdf"],  key="sal_pdf", label_visibility="collapsed")
+    sal_csvs  = st.file_uploader("Faturas CSV (selecione todos os arquivos)", type=["csv"], key="sal_csv", label_visibility="collapsed", accept_multiple_files=True)
+    sal_pdf   = st.file_uploader("Fatura PDF (opcional)",   type=["pdf"],  key="sal_pdf", label_visibility="collapsed")
 
     st.markdown('<div style="margin:20px 0 8px 0;"></div>', unsafe_allow_html=True)
     processar = st.button("⚡  PROCESSAR FATURAS", type="primary", use_container_width=True)
@@ -279,16 +279,15 @@ if processar:
     else:
         resultado["select"] = None
 
-    if sal_excel and sal_pdf:
+    if sal_csvs:
         with st.spinner("Processando SALV SAÚDE…"):
-            pdf_data   = parsear_pdf(_bytes(sal_pdf), "SALV")
-            fatura_sal = carregar_fatura(_bytes(sal_excel), "SALV", pdf_data["locacoes"])
+            fatura_sal = carregar_fatura_salv_csv([_bytes(f) for f in sal_csvs])
             df_sal, div_sal = cruzar(fatura_sal, filtrar_convenio(base, "SALV"))
             resultado["salv"] = {
                 "df": df_sal, "divergencias": div_sal,
                 "resumo": resumo_geral(df_sal),
                 "por_locacao": resumo_por_locacao(df_sal),
-                "totais_pdf": pdf_data["totais_pdf"],
+                "totais_pdf": {},
             }
     else:
         resultado["salv"] = None
@@ -318,7 +317,7 @@ if res is None:
             <div class="kpi-label">PASSO 2</div>
             <div style="font-size:1.8rem;">📄</div>
             <div style="font-weight:600;color:#0D2B6B;margin-top:6px;">Faturas SELECT e SALV</div>
-            <div class="kpi-sub">Excel + PDF de cada operadora</div>
+            <div class="kpi-sub">SELECT: Excel + PDF · SALV: CSVs</div>
         </div>""", unsafe_allow_html=True)
     with col3:
         st.markdown("""
