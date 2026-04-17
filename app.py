@@ -282,13 +282,19 @@ if processar:
     if sal_csvs:
         with st.spinner("Processando SALV SAÚDE…"):
             fatura_sal = carregar_fatura_salv_csv([_bytes(f) for f in sal_csvs])
-            df_sal, div_sal = cruzar(fatura_sal, filtrar_convenio(base, "SALV"))
-            resultado["salv"] = {
-                "df": df_sal, "divergencias": div_sal,
-                "resumo": resumo_geral(df_sal),
-                "por_locacao": resumo_por_locacao(df_sal),
-                "totais_pdf": {},
-            }
+            if fatura_sal.empty:
+                st.warning("⚠️ Nenhuma linha válida encontrada nos CSVs da SALV. "
+                           "Verifique se o arquivo está no formato correto "
+                           "(separador ';', colunas: NOME BENEFICIÁRIO, CPF, VALOR MENSALIDADE…)")
+                resultado["salv"] = None
+            else:
+                df_sal, div_sal = cruzar(fatura_sal, filtrar_convenio(base, "SALV"))
+                resultado["salv"] = {
+                    "df": df_sal, "divergencias": div_sal,
+                    "resumo": resumo_geral(df_sal),
+                    "por_locacao": resumo_por_locacao(df_sal),
+                    "totais_pdf": {},
+                }
     else:
         resultado["salv"] = None
 

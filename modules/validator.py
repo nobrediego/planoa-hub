@@ -34,6 +34,11 @@ def cruzar(fatura: pd.DataFrame, base: pd.DataFrame) -> tuple[pd.DataFrame, pd.D
     Junta fatura com base via CPF beneficiário.
     Retorna (df_cruzado, df_divergencias).
     """
+    _div_cols = ["CPF","Nome","Operadora","Tipo cobrança","Locação (PDF)",
+                 "Campo","Divergência","Valor fatura","Valor base (NET)"]
+    if fatura.empty or "cpf_ben" not in fatura.columns:
+        return fatura, pd.DataFrame(columns=_div_cols)
+
     _cols = ["cpf_ben","convenio","entidade","status_ben","valor_net","tipo_ben",
              "nome_contratante","grupo_contratual","faixa","dt_inativacao"]
     base_sel = base.drop_duplicates("cpf_ben")[_cols]

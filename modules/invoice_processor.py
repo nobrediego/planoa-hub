@@ -139,8 +139,14 @@ def carregar_fatura_salv_csv(arquivos) -> pd.DataFrame:
         except Exception:
             pass
 
+    _empty_cols = [
+        "operadora","matricula_fat","codigo_fat","nome_ben_fat","cpf_ben",
+        "cpf_titular","plano","categoria","dt_nascimento","dt_inclusao",
+        "dt_procedimento","prestador","descricao_item","locacao_pdf",
+        "tipo_cobranca","valor",
+    ]
     if not frames:
-        return pd.DataFrame()
+        return pd.DataFrame(columns=_empty_cols)
 
     df_raw = pd.concat(frames, ignore_index=True)
     df_raw.columns = [c.strip().upper() for c in df_raw.columns]
@@ -202,6 +208,6 @@ def carregar_fatura_salv_csv(arquivos) -> pd.DataFrame:
             rows.append({**base, "tipo_cobranca": "MENSALIDADE", "valor": 0.0})
 
     if not rows:
-        return pd.DataFrame()
+        return pd.DataFrame(columns=_empty_cols)
 
     return pd.DataFrame(rows).reset_index(drop=True)
