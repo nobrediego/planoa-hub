@@ -34,16 +34,13 @@ def cruzar(fatura: pd.DataFrame, base: pd.DataFrame) -> tuple[pd.DataFrame, pd.D
     Junta fatura com base via CPF beneficiário.
     Retorna (df_cruzado, df_divergencias).
     """
-    base_idx = base.drop_duplicates("cpf_ben").set_index("cpf_ben")
+    _cols = ["cpf_ben","convenio","entidade","status_ben","valor_net","tipo_ben",
+             "nome_contratante","grupo_contratual","faixa","dt_inativacao"]
+    base_sel = base.drop_duplicates("cpf_ben")[_cols]
 
     # Merge
     df = fatura.copy()
-    df = df.merge(
-        base_idx[["convenio","entidade","status_ben","valor_net","tipo_ben",
-                  "nome_contratante","grupo_contratual","faixa","dt_inativacao"]],
-        on="cpf_ben",
-        how="left"
-    )
+    df = df.merge(base_sel, on="cpf_ben", how="left")
 
     # Preenche quando não encontrado na base
     df["status_ben"]     = df["status_ben"].fillna("NÃO ENCONTRADO NA BASE")
